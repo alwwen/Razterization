@@ -70,7 +70,7 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 {
 	SimpleVertex triangle[] = //KLOCKANS HÅLL
 	{
-		{{-0.5, 0.5f, 0.0f}, {0,0,1}, {0,0}}, //HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}
+		{{-0.5, 0.5f, 0.0f}, {0,0,1}, {0,0}}, //HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}, {u,v}
 		{{0.5, -0.5f, 0.0f}, {0,0,1},{0,0}}, //NER TILL HÖGER
 		{{-0.5, -0.5f, 0.0f},{0,0,1},{0,0}},//NER TILL VÄNSTER
 		
