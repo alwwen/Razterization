@@ -1,2 +1,4 @@
-﻿  PipelineHelper.cpp
-  raz.vcxproj -> C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe
+﻿  Main.cpp
+C:\Users\alai20\source\repos\Razterization\Main.cpp(98,33): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\alai20\source\repos\Razterization\Main.cpp(102,33): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  raz.vcxproj -> C:\Users\alai20\source\repos\Razterization\Debug\raz.exe

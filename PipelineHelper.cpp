@@ -72,13 +72,13 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 {
 	SimpleVertex triangle[] = //KLOCKANS HÅLL
 	{
-		{{-0.5, 0.5f, 0.0f}, {0,0,1}, {0,0}}, //HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}, {u,v}
-		{{0.5, -0.5f, 0.0f}, {0,0,1},{0,0}}, //NER TILL HÖGER
-		{{-0.5, -0.5f, 0.0f},{0,0,1},{0,0}},//NER TILL VÄNSTER
+		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}, {u,v}
+		{{0.5, -0.5f, -4.0f}, {0,0,1},{0,0}}, //NER TILL HÖGER
+		{{-0.5, -0.5f, -4.0f},{0,0,1},{0,0}},//NER TILL VÄNSTER
 		
-		{{-0.5, 0.5f, 0.0f}, {0,0,1}, {0,0}}, //HÖGST UPP {x, y, z}, {R, G, B}
-		{{0.5, 0.5f, 0.0f}, {0,0,1} ,{0,0}}, //NER TILL HÖGER
-		{{0.5, -0.5f, 0.0f}, {0,0,1},{0,0}} //NER TILL VÄNSTER
+		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //HÖGST UPP {x, y, z}, {R, G, B}
+		{{0.5, 0.5f, -4.0f}, {0,0,1} ,{0,0}}, //NER TILL HÖGER
+		{{0.5, -0.5f, -4.0f}, {0,0,1},{0,0}} //NER TILL VÄNSTER
 	};
 
 	D3D11_BUFFER_DESC bufferDesc;
@@ -122,7 +122,7 @@ bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
 void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle)
 {
 	DirectX::XMMATRIX worldmatrix = DirectX::XMMatrixIdentity(); //Satt
-	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity(); //Satt
+	DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis({0.0f, 1.0f, 0.0f}, angle); //Satt
 	DirectX::XMMATRIX scale = DirectX::XMMatrixIdentity(); //Satt
 	DirectX::XMMATRIX translation = DirectX::XMMatrixIdentity(); //Satt
 
@@ -130,7 +130,7 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	DirectX::XMMATRIX perspectiveProjection; //Satt
 
 	DirectX::XMVECTOR aRotation; //Satt
-	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-2.0f}; //Satt
+	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-6.0f}; //Satt
 	DirectX::XMVECTOR cameraFocus = {0.0f,0.0f,1.0f}; //Satt
 	DirectX::XMVECTOR cameraUp = {0.0f,1.0f,0.0f}; //Vad som är uppåt för kameran
 
@@ -141,12 +141,9 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	scale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f);
 
-	//cameraPosition = DirectX::XMVectorSet(0.0f, 0.0f, -2.0f);
-	//cameraFocus = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f);
-	//cameraUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f);
-
+	worldmatrix = DirectX::XMMatrixMultiply(worldmatrix, rotation); //Kolla mer på rotationen
 	viewmatrix = DirectX::XMMatrixLookAtLH(cameraPosition, cameraFocus, cameraUp);
-	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.4f * 3.1415f, 1024.0f / 576.0f, 0.01f, 300.0f);
+	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.4f * 3.1415f, 1024.0f / 576.0f, 0.1f, 300.0f);
 	DirectX::XMMATRIX WVP = worldmatrix * viewmatrix * perspectiveProjection;
 
 	DirectX::XMStoreFloat4x4(&objectsavedMatrix, DirectX::XMMatrixTranspose(WVP));

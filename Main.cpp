@@ -77,7 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	auto starttime = clock.now();
 	auto endtime = clock.now();
 	float time = 0;
-	float speed = 0.001;
+	float speed = 0.5;
 	float currentangle = 0;
 
 
