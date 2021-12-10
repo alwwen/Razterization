@@ -1,2 +1,2 @@
-C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe
 C:\Users\alai20\source\repos\Razterization\Debug\raz.exe
+C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe

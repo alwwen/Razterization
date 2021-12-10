@@ -15,10 +15,16 @@ struct VertexShaderOutput
 
 };
 
+cbuffer ConstantBuffer : register(b0)
+{
+	float4x4 WVP;
+	float4x4 world;
+}
+
 VertexShaderOutput main(VertexShaderInput input)
 {
 	VertexShaderOutput output;
-	output.position = float4(input.position, 1.0f);
+	output.position = mul(float4(input.position, 1.0f), WVP);
 	//output.colour = input.colour;
 	output.normal = input.normal;
 	output.uv = input.uv;

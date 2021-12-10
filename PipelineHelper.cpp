@@ -4,6 +4,8 @@
 #include <iostream>
 #include <DirectXMath.h>
 
+
+
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode)
 {
 	std::string shaderData;
@@ -97,7 +99,72 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 	return !FAILED(hr);
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout)
+bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
+{
+	D3D11_BUFFER_DESC cBufferDesc;
+	cBufferDesc.ByteWidth = sizeof(ConstantBufferPerObject);
+	cBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cBufferDesc.MiscFlags = 0;
+	cBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = constantBuffer;
+	data.SysMemPitch = 0;
+	data.SysMemSlicePitch = 0;
+
+	HRESULT hr = device->CreateBuffer(&cBufferDesc, nullptr, &constantBuffer);
+
+	return !FAILED(hr);
+}
+
+void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle)
+{
+	DirectX::XMMATRIX worldmatrix = DirectX::XMMatrixIdentity(); //Satt
+	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity(); //Satt
+	DirectX::XMMATRIX scale = DirectX::XMMatrixIdentity(); //Satt
+	DirectX::XMMATRIX translation = DirectX::XMMatrixIdentity(); //Satt
+
+	DirectX::XMMATRIX viewmatrix; //Satt
+	DirectX::XMMATRIX perspectiveProjection; //Satt
+
+	DirectX::XMVECTOR aRotation; //Satt
+	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-2.0f}; //Satt
+	DirectX::XMVECTOR cameraFocus = {0.0f,0.0f,1.0f}; //Satt
+	DirectX::XMVECTOR cameraUp = {0.0f,1.0f,0.0f}; //Vad som är uppåt för kameran
+
+	DirectX::XMFLOAT4X4 objectsavedMatrix;
+
+	aRotation = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+	rotation = DirectX::XMMatrixRotationAxis(aRotation, angle);
+	scale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f);
+
+	//cameraPosition = DirectX::XMVectorSet(0.0f, 0.0f, -2.0f);
+	//cameraFocus = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f);
+	//cameraUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f);
+
+	viewmatrix = DirectX::XMMatrixLookAtLH(cameraPosition, cameraFocus, cameraUp);
+	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.4f * 3.1415f, 1024.0f / 576.0f, 0.01f, 300.0f);
+	DirectX::XMMATRIX WVP = worldmatrix * viewmatrix * perspectiveProjection;
+
+	DirectX::XMStoreFloat4x4(&objectsavedMatrix, DirectX::XMMatrixTranspose(WVP));
+	constantBufferPerObject->WVP = objectsavedMatrix;
+
+	DirectX::XMStoreFloat4x4(&objectsavedMatrix, DirectX::XMMatrixTranspose(worldmatrix));
+	constantBufferPerObject->world = objectsavedMatrix;
+
+	immediatecontext->VSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
+	immediatecontext->PSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+	immediatecontext->Map(constantPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, constantBufferPerObject, sizeof(ConstantBufferPerObject));
+	immediatecontext->Unmap(constantPerObjectBuffer, 0); 
+
+}
+
+bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer)
 {
 	std::string vShaderByteCode;
 	if (!LoadShaders(device, vShader, pShader, vShaderByteCode))
@@ -113,6 +180,11 @@ bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11Vert
 	if (!CreateVertexBuffer(device, vertexBuffer))
 	{
 		std::cerr << "Error creating vertex buffer!" << std::endl;
+		return false;
+	}
+	if (!CreateConstantBuffer(device, constantBuffer))
+	{
+		std::cerr << "Error creating constant buffer!" << std::endl;
 		return false;
 	}
 	return true;
