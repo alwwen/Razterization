@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <chrono>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <d3d11.h>
 #include "WindowHelper.h"
@@ -12,12 +13,12 @@
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer, ID3D11Buffer* constantBuffer,
-	ConstantBufferPerObject constantBufferPerObject, float angle)
+	ConstantBufferPerObject constantBufferPerObject, float angle, ID3D11RasterizerState* RasterationState)
 {
 	float clearColour[4] = { 0, 0, 0, 0 };
 	immediateContext->ClearRenderTargetView(rtv, clearColour);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	UpdateBuffer(immediateContext, constantBuffer, &constantBufferPerObject, angle);
+	immediateContext->RSSetState(RasterationState);
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
@@ -59,8 +60,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* constantBuffer;
 	ConstantBufferPerObject constantBufferPerObject = {};
+	ID3D11RasterizerState* RasterationState = {};
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, RasterationState))
 	{
 		std::cerr << "Failed to setup d3d11!" << std::endl;
 		return -1;
@@ -93,20 +95,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			DispatchMessage(&msg);
 		}
 		currentangle += time * speed;
-		if (currentangle >= 2 * acos(0.0)) //Kolla på denna FULKNEP
+		if (currentangle > 2 * M_PI) //Kolla på denna FULKNEP RENDERAR ENDAST ENA SIDAN EFTER ETT HELT VARV REDAN ÄR GJORT
 		{
-			currentangle -= 2 * acos(0.0);
+			currentangle -= 2 * M_PI;
 		}
-		else if (currentangle <= -2 * acos(0.0)) //Kolla på denna FULKNEP
+		else if (currentangle < -2 * M_PI) //Kolla på denna FULKNEP
 		{
-			currentangle += 2 * acos(0.0);
+			currentangle += 2 * M_PI;
 		}
-		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer, constantBufferPerObject, currentangle);
+		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer, constantBufferPerObject, currentangle, RasterationState);
+		UpdateBuffer(immediateContext, constantBuffer, &constantBufferPerObject, currentangle);
 		swapChain->Present(0, 0);
 		endtime = clock.now();
 	}
 
-
+	RasterationState->Release();
 	vertexBuffer->Release();
 	inputLayout->Release();
 	pShader->Release();

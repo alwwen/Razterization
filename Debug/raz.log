@@ -1,4 +1,6 @@
-﻿  Main.cpp
-C:\Users\alai20\source\repos\Razterization\Main.cpp(98,33): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\alai20\source\repos\Razterization\Main.cpp(102,33): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-  raz.vcxproj -> C:\Users\alai20\source\repos\Razterization\Debug\raz.exe
+﻿  D3D11Helper.cpp
+  Main.cpp
+C:\Users\alai20\OneDrive - BTH Student\Desktop\razteration\Razterization\Main.cpp(100,28): warning C4305: '-=': truncation from 'double' to 'float'
+C:\Users\alai20\OneDrive - BTH Student\Desktop\razteration\Razterization\Main.cpp(104,28): warning C4305: '+=': truncation from 'double' to 'float'
+  Generating Code...
+  raz.vcxproj -> C:\Users\alai20\OneDrive - BTH Student\Desktop\razteration\Razterization\Debug\raz.exe
