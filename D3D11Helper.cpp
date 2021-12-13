@@ -87,8 +87,8 @@ void SetViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MinDepth = 0;
 	viewport.MaxDepth = 1;
 }
-
-bool CreateRasterationState(ID3D11Device* device, ID3D11RasterizerState* RasterationState)
+/*
+bool CreateRasterationState(ID3D11Device* device, ID3D11RasterizerState*& RasterationState)
 {
 	D3D11_RASTERIZER_DESC RasterationDesc;
 	ZeroMemory(&RasterationDesc, sizeof(D3D11_RASTERIZER_DESC));
@@ -99,10 +99,10 @@ bool CreateRasterationState(ID3D11Device* device, ID3D11RasterizerState* Rastera
 	
 	HRESULT hr = device->CreateRasterizerState(&RasterationDesc, &RasterationState);
 	return !FAILED(hr);
-}
+} */
 
 bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain, 
-	ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport, ID3D11RasterizerState* RasterationState)
+	ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport /*ID3D11RasterizerState*& RasterationState*/)
 {
 	if (!CreateInterface(width, height, window, device, immediateContext, swapChain))
 	{
@@ -119,10 +119,10 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 		std::cerr << "Error creating depth stencil view!" << std::endl;
 		return false;
 	}
-	if (!CreateRasterationState(device, RasterationState)) {
+	/*if (!CreateRasterationState(device, RasterationState)) {
 		std::cerr << "Failed to create solid rasterizer state!" << std::endl;
 		return false;
-	}
+	} */
 
 	SetViewport(viewport, width, height);
 	return true;

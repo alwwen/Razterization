@@ -26,7 +26,7 @@ VertexShaderOutput main(VertexShaderInput input)
 	VertexShaderOutput output;
 	output.position = mul(float4(input.position, 1.0f), WVP);
 	//output.colour = input.colour;
-	output.normal = input.normal;
+	output.normal = mul(float4(input.normal, 0.0f), world);
 	output.uv = input.uv;
 	return output;
 }

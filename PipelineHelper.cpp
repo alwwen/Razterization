@@ -72,13 +72,13 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 {
 	SimpleVertex triangle[] = //KLOCKANS HÅLL
 	{
-		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}, {u,v}
-		{{0.5, -0.5f, -4.0f}, {0,0,1},{0,0}}, //NER TILL HÖGER
-		{{-0.5, -0.5f, -4.0f},{0,0,1},{0,0}},//NER TILL VÄNSTER
+		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //1 HÖGST UPP POSITION{x, y, z}, NORMALEN{x,y,z}, {u,v}
+		{{0.5, -0.5f, -4.0f}, {0,0,1},{1,1}}, //2 NER TILL HÖGER
+		{{-0.5, -0.5f, -4.0f},{0,0,1},{0,1}},//3 NER TILL VÄNSTER
 		
-		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //HÖGST UPP {x, y, z}, {R, G, B}
-		{{0.5, 0.5f, -4.0f}, {0,0,1} ,{0,0}}, //NER TILL HÖGER
-		{{0.5, -0.5f, -4.0f}, {0,0,1},{0,0}} //NER TILL VÄNSTER
+		{{-0.5, 0.5f, -4.0f}, {0,0,1}, {0,0}}, //4 HÖGST UPP {x, y, z}, {R, G, B}
+		{{0.5, 0.5f, -4.0f}, {0,0,1} ,{1,0}}, //5 NER TILL HÖGER
+		{{0.5, -0.5f, -4.0f}, {0,0,1},{1,1}} //6 NER TILL VÄNSTER
 	};
 
 	D3D11_BUFFER_DESC bufferDesc;
@@ -130,7 +130,7 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	DirectX::XMMATRIX perspectiveProjection; //Satt
 
 	DirectX::XMVECTOR aRotation; //Satt
-	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-6.0f}; //Satt
+	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-5.5f}; //Satt
 	DirectX::XMVECTOR cameraFocus = {0.0f,0.0f,1.0f}; //Satt
 	DirectX::XMVECTOR cameraUp = {0.0f,1.0f,0.0f}; //Vad som är uppåt för kameran
 
@@ -141,9 +141,9 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	scale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f);
 
-	worldmatrix = scale * translation * rotation; //Kolla mer på rotationen
+	worldmatrix = scale * rotation * translation; //Kolla mer på rotationen
 	viewmatrix = DirectX::XMMatrixLookAtLH(cameraPosition, cameraFocus, cameraUp);
-	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.4f * 3.1415f, 1024.0f / 576.0f, 0.1f, 500.0f);
+	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1415f, 1024.0f / 576.0f, 0.1f, 500.0f);
 	DirectX::XMMATRIX WVP = worldmatrix * viewmatrix * perspectiveProjection;
 
 	DirectX::XMStoreFloat4x4(&objectsavedMatrix, DirectX::XMMatrixTranspose(WVP));
@@ -153,7 +153,7 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	constantBufferPerObject->world = objectsavedMatrix;
 
 	immediatecontext->VSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
-	//immediatecontext->PSSetConstantBuffers(0, 1, &constantPerObjectBuffer); Behövs inte just nu ROTATION
+	immediatecontext->PSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
 	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 	immediatecontext->Map(constantPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, constantBufferPerObject, sizeof(ConstantBufferPerObject));
