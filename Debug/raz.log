@@ -1,4 +1,2 @@
 ﻿  Main.cpp
-C:\Users\Alexander Winblad\source\repos\raz\Main.cpp(163,28): warning C4305: '-=': truncation from 'double' to 'float'
-C:\Users\Alexander Winblad\source\repos\raz\Main.cpp(167,28): warning C4305: '+=': truncation from 'double' to 'float'
   raz.vcxproj -> C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe

@@ -69,6 +69,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* constantBuffer;
 	ConstantBufferPerObject constantBufferPerObject = {};
+	LightConstantBuffer lightConstantBuffer = {};
 	//ID3D11RasterizerState* RasterationState = nullptr;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport/* RasterationState*/))
@@ -83,13 +84,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -1;
 	}
 
-
-	std::chrono::high_resolution_clock clock;
-	auto starttime = clock.now();
-	auto endtime = clock.now();
-	float time = 0;
-	float speed = 1.0;
-	float currentangle = 0;
 
 	int first_width = 0;
 	int first_height = 0;
@@ -144,7 +138,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11SamplerState* samplerState;
 
 	device->CreateSamplerState(&samplerDesc, &samplerState);
+
+	lightConstantBuffer.att = DirectX::XMFLOAT3(0.0f, 0.4f, 0.0f);
+	lightConstantBuffer.position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.5f);
+	lightConstantBuffer.colour = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+	lightConstantBuffer.ambient = DirectX::XMFLOAT3(0.3f, 0.3f, 0.3f);
+	lightConstantBuffer.diffuse = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+
 	
+	std::chrono::high_resolution_clock clock;
+	auto starttime = clock.now();
+	auto endtime = clock.now();
+	float time = 0;
+	float speed = 1.0;
+	float currentangle = 0;
 
 	MSG msg = {};
 
@@ -160,11 +167,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		currentangle += time * speed;
 		if (currentangle > 2 * M_PI) // RENDERAR ENDAST ENA SIDAN EFTER ETT HELT VARV REDAN ÄR GJORT
 		{
-			currentangle -= 2 * M_PI;
-		}
-		else if (currentangle < -2 * M_PI)
-		{
-			currentangle += 2 * M_PI;
+			currentangle = 0;
 		}
 		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer, constantBufferPerObject, currentangle, textureSRV, samplerState/*RasterationState*/);
 		
@@ -172,7 +175,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		endtime = clock.now();
 	}
 
-	//RasterationState->Release();
+	constantBuffer->Release();
 	textureSRV->Release();
 	vertexBuffer->Release();
 	inputLayout->Release();
