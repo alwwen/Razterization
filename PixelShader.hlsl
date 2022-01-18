@@ -42,9 +42,19 @@ cbuffer LightConstantBuffer : register(b1)
 
 float4 main(PixelShaderInput input) : SV_TARGET //Render Target
 {
+	float3 finalLight = {0.0f,0.0f,0.0f};
 	float3 vectorToLight = light.position - input.worldPosition;
 	float distance = length(vectorToLight);
-	float3 posToCamera = light.position - light.cameraPosition;
+	float3 posToCamera = normalize(light.position - light.cameraPosition);
+
+
+	float3 ambient = light.ambient * light.diffuse;
+
+	float3 amountOfLight = dot(vectorToLight/distance, light.ambient);
+
+	float3 diffuse = light.diffuse * light.colour * max(dot(normal, vectorToLight), 0);
 	
+	float3 specular = light.specular
+
 	return m_texture.Sample(m_samplerState, input.uv);
 };
