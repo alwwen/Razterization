@@ -68,6 +68,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11InputLayout* inputLayout;
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* constantBuffer;
+	ID3D11Buffer* lightBuffer;
 	ConstantBufferPerObject constantBufferPerObject = {};
 	LightConstantBuffer lightConstantBuffer = {};
 	//ID3D11RasterizerState* RasterationState = nullptr;
@@ -78,7 +79,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vertexBuffer, vShader, pShader, inputLayout, constantBuffer))
+	if (!SetupPipeline(device, vertexBuffer, vShader, pShader, inputLayout, constantBuffer, lightBuffer))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
 		return -1;
@@ -140,12 +141,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
 	lightConstantBuffer.att = DirectX::XMFLOAT3(0.0f, 0.4f, 0.0f);
-	lightConstantBuffer.position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.5f);
+	lightConstantBuffer.position = DirectX::XMFLOAT3(0.0f, 0.0f, -10.5f);
 	lightConstantBuffer.colour = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 	lightConstantBuffer.ambient = DirectX::XMFLOAT3(0.3f, 0.3f, 0.3f);
 	lightConstantBuffer.diffuse = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 
-	
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+	immediateContext->PSSetConstantBuffers(1, 1, &lightBuffer);
+	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, &lightConstantBuffer, sizeof(LightConstantBuffer));
+	immediateContext->Unmap(lightBuffer, 0);
+
 	std::chrono::high_resolution_clock clock;
 	auto starttime = clock.now();
 	auto endtime = clock.now();
@@ -175,6 +181,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		endtime = clock.now();
 	}
 
+	lightBuffer->Release();
 	constantBuffer->Release();
 	textureSRV->Release();
 	vertexBuffer->Release();

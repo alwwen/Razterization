@@ -14,23 +14,23 @@ struct PixelShaderInput
 struct Lighting
 {
 
-	float3 att;
-	float3 attPadding;
+	float4 att;
+	float4 attPadding;
 
-	float3 position;
-	float3 positionPadding;
+	float4 position;
+	float4 positionPadding;
 
-	float3 cameraPosition;
-	float3 cameraPositionPadding;
+	float4 cameraPosition;
+	float4 cameraPositionPadding;
 
-	float3 colour;
-	float3 colourPadding;
+	float4 colour;
+	float4 colourPadding;
 
-	float3 ambient;
-	float3 ambientPadding;
+	float4 ambient;
+	float4 ambientPadding;
 
-	float3 diffuse;
-	float3 diffusePadding;
+	float4 diffuse;
+	float4 diffusePadding;
 
 };
 
@@ -42,19 +42,33 @@ cbuffer LightConstantBuffer : register(b1)
 
 float4 main(PixelShaderInput input) : SV_TARGET //Render Target
 {
-	float3 finalLight = {0.0f,0.0f,0.0f};
+	/*float4 finalLight = m_texture.Sample(m_samplerState, input.uv);
 	float3 vectorToLight = light.position - input.worldPosition;
 	float distance = length(vectorToLight);
-	float3 posToCamera = normalize(light.position - light.cameraPosition);
+	float3 posToCamera = normalize(light.cameraPosition - light.position);
+	float3 reflection = normalize(reflect(-vectorToLight, input.normal));
 
 
-	float3 ambient = light.ambient * light.diffuse;
+	float4 ambient = light.ambient * light.colour;
 
 	float3 amountOfLight = dot(vectorToLight/distance, light.ambient);
 
-	float3 diffuse = light.diffuse * light.colour * max(dot(normal, vectorToLight), 0);
-	
-	float3 specular = light.specular
+	float4 diffuse = light.colour * max(dot(input.normal, vectorToLight), 0);
 
-	return m_texture.Sample(m_samplerState, input.uv);
+	float4 specular = light.colour * pow(max(dot(reflection, posToCamera), 0), 1024.0f);
+
+	return float4((finalLight * (ambient + diffuse * light.att) + specular * light.att), 1.0f); */
+	
+	float4 finalLight;
+	float4 diffuse = m_texture.Sample(m_samplerState, input.uv);
+	float3 vectorToLight = normalize(input.worldPosition - light.position);
+	float4 diffuseI = dot(input.normal, -vectorToLight);
+	float m_distance = distance(input.worldPosition, light.position);
+	float att = 1 / m_distance;
+	finalLight = diffuse; 
+	if (0 == light.position.x && 0 == light.position.y && 0 == light.position.z)
+		return float4(1,1,1,1);
+	return light.position;
+
+
 };

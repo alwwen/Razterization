@@ -119,6 +119,26 @@ bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
 	return !FAILED(hr);
 }
 
+bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer)
+{
+	D3D11_BUFFER_DESC lBufferDesc;
+	lBufferDesc.ByteWidth = sizeof(LightConstantBuffer);
+	lBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lBufferDesc.MiscFlags = 0;
+	lBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = lightBuffer;
+	data.SysMemPitch = 0;
+	data.SysMemSlicePitch = 0;
+
+	HRESULT hr = device->CreateBuffer(&lBufferDesc, nullptr, &lightBuffer);
+
+	return !FAILED(hr);
+}
+
 void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle)
 {
 	DirectX::XMMATRIX worldmatrix = DirectX::XMMatrixIdentity(); //Satt
@@ -161,7 +181,7 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer)
+bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, ID3D11Buffer*& lightBuffer)
 {
 	std::string vShaderByteCode;
 	if (!LoadShaders(device, vShader, pShader, vShaderByteCode))
@@ -184,5 +204,11 @@ bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11Vert
 		std::cerr << "Error creating constant buffer!" << std::endl;
 		return false;
 	}
+	if (!CreateLightConstantBuffer(device, lightBuffer))
+	{
+		std::cerr << "Error creating constant buffer!" << std::endl;
+		return false;
+	}
+
 	return true;
 }

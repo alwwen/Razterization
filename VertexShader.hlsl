@@ -12,7 +12,7 @@ struct VertexShaderOutput
 	//float3 colour : COLOUR;
 	float3 normal : NORMAL;
 	float2 uv : UV;
-
+	float3 worldPosition : POSITION;
 };
 
 cbuffer ConstantBuffer : register(b0)
@@ -28,5 +28,6 @@ VertexShaderOutput main(VertexShaderInput input)
 	//output.colour = input.colour;
 	output.normal = mul(float4(input.normal, 0.0f), world);
 	output.uv = input.uv;
+	output.worldPosition = mul(float4(input.position, 1.0f), world);
 	return output;
 }

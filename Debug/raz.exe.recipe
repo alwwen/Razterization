@@ -2,15 +2,15 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe</FullPath>
+      <FullPath>C:\Users\alai20\OneDrive - BTH Student\Documents\Razterization\Debug\raz.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\Alexander Winblad\source\repos\raz\Debug\PixelShader.cso</FullPath>
+      <FullPath>C:\Users\alai20\OneDrive - BTH Student\Documents\Razterization\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\Alexander Winblad\source\repos\raz\Debug\VertexShader.cso</FullPath>
+      <FullPath>C:\Users\alai20\OneDrive - BTH Student\Documents\Razterization\Debug\VertexShader.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

@@ -48,9 +48,10 @@ struct LightConstantBuffer
 	float diffusePadding;
 };
 
-bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer);
+bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, ID3D11Buffer*& lightBuffer);
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode);
 bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, const std::string& vShaderByteCode);
 bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer);
+bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer);
 void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle);
