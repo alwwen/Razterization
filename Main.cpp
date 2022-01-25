@@ -89,7 +89,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	int first_width = 0;
 	int first_height = 0;
 	int first_channels = 3;
-	const char* picc = "Kiwi.jpg";
+	const char* picc = "goku1.jpg";
 	unsigned char* load_picc = stbi_load(picc, &first_width, &first_height, &first_channels, STBI_rgb_alpha);
 	
 	D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -140,14 +140,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
-	lightConstantBuffer.att = DirectX::XMFLOAT3(0.0f, 0.4f, 0.0f);
-	lightConstantBuffer.position = DirectX::XMFLOAT3(0.0f, 0.0f, -10.5f);
-	lightConstantBuffer.colour = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-	lightConstantBuffer.ambient = DirectX::XMFLOAT3(0.3f, 0.3f, 0.3f);
-	lightConstantBuffer.diffuse = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+	lightConstantBuffer.att = DirectX::XMFLOAT4(10.0f, 4.0f, 1.0f, 1.0f);
+	lightConstantBuffer.position = DirectX::XMFLOAT4(0.0f, 0.0f, -5.5f, 1.0f);
+	lightConstantBuffer.cameraPosition = DirectX::XMFLOAT4(0.0f, 0.0f, -5.5f, 1.0f);
+	lightConstantBuffer.colour = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	lightConstantBuffer.ambient = DirectX::XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
+	lightConstantBuffer.diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
-	immediateContext->PSSetConstantBuffers(1, 1, &lightBuffer);
+	immediateContext->PSSetConstantBuffers(1u, 1u, &lightBuffer);
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, &lightConstantBuffer, sizeof(LightConstantBuffer));
 	immediateContext->Unmap(lightBuffer, 0);

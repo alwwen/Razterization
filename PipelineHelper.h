@@ -34,18 +34,12 @@ struct ConstantBufferPerObject
 
 struct LightConstantBuffer
 {
-	DirectX::XMFLOAT3 att;
-	float attPadding;
-	DirectX::XMFLOAT3 position;
-	float positionPadding;
-	DirectX::XMFLOAT3 cameraPosition;
-	float cameraPositionPadding;
-	DirectX::XMFLOAT3 colour;
-	float colourPadding;
-	DirectX::XMFLOAT3 ambient;
-	float ambientPadding;
-	DirectX::XMFLOAT3 diffuse;
-	float diffusePadding;
+	DirectX::XMFLOAT4 att;
+	DirectX::XMFLOAT4 position;
+	DirectX::XMFLOAT4 cameraPosition;
+	DirectX::XMFLOAT4 colour;
+	DirectX::XMFLOAT4 ambient;
+	DirectX::XMFLOAT4 diffuse;
 };
 
 bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, ID3D11Buffer*& lightBuffer);
