@@ -139,7 +139,8 @@ bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer)
 	return !FAILED(hr);
 }
 
-void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle)
+void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle,
+	DirectX::XMFLOAT4 floatCameraPosition, DirectX::XMFLOAT3 floatCameraFocus)
 {
 	DirectX::XMMATRIX worldmatrix = DirectX::XMMatrixIdentity(); //Satt
 	DirectX::XMMATRIX rotation = DirectX::XMMatrixIdentity(); //DirectX::XMMatrixRotationAxis({0.0f, 1.0f, 0.0f}, angle); //Satt
@@ -150,8 +151,10 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	DirectX::XMMATRIX perspectiveProjection; //Satt
 
 	DirectX::XMVECTOR aRotation; //Satt
-	DirectX::XMVECTOR cameraPosition = {0.0f,0.0f,-5.5f}; //Satt
-	DirectX::XMVECTOR cameraFocus = {0.0f,0.0f,1.0f}; //Satt
+	DirectX::XMVECTOR cameraPosition = DirectX::XMLoadFloat4(&floatCameraPosition); //Satt
+	//DirectX::XMVECTOR cameraFocus = DirectX::XMLoadFloat3(&floatCameraFocus); //Satt
+	//DirectX::XMVECTOR cameraPosition = { 0.0f, 0.0f, -5.5f };
+	DirectX::XMVECTOR cameraFocus = DirectX::XMLoadFloat3(&floatCameraFocus);
 	DirectX::XMVECTOR cameraUp = {0.0f,1.0f,0.0f}; //Vad som är uppåt för kameran
 
 	DirectX::XMFLOAT4X4 objectsavedMatrix;
@@ -161,7 +164,7 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	scale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f);
 
-	worldmatrix = scale * rotation * translation; //Kolla mer på rotationen
+	worldmatrix = scale * rotation * translation; 
 	viewmatrix = DirectX::XMMatrixLookAtLH(cameraPosition, cameraFocus, cameraUp);
 	perspectiveProjection = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1415f, 1024.0f / 576.0f, 0.1f, 500.0f);
 	DirectX::XMMATRIX WVP = worldmatrix * viewmatrix * perspectiveProjection;

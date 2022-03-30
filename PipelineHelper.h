@@ -48,4 +48,5 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, co
 bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer);
 bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer);
-void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject, float angle);
+void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constantPerObjectBuffer, ConstantBufferPerObject* constantBufferPerObject,
+	float angle, DirectX::XMFLOAT4 floatCameraPosition, DirectX::XMFLOAT3 cameraFocus);

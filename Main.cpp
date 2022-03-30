@@ -13,19 +13,19 @@
 #include "stb_image/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image/stb_image_write.h"
-
+//#include <wrl/client.h> Com-pointers
 
 
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer, ID3D11Buffer* constantBuffer,
-	ConstantBufferPerObject constantBufferPerObject, float angle, ID3D11ShaderResourceView* textureSRV, ID3D11SamplerState*& samplerState /*ID3D11RasterizerState* RasterationState*/)
+	ConstantBufferPerObject constantBufferPerObject, float angle, ID3D11ShaderResourceView* textureSRV, ID3D11SamplerState*& samplerState,
+	DirectX::XMFLOAT4 cameraPosition, DirectX::XMFLOAT3 cameraFocus, ID3D11RasterizerState*& ras_state)
 {
 	float clearColour[4] = { 0, 0, 0, 0 };
 	immediateContext->ClearRenderTargetView(rtv, clearColour);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	UpdateBuffer(immediateContext, constantBuffer, &constantBufferPerObject, angle);
-	//immediateContext->RSSetState(RasterationState);
+	UpdateBuffer(immediateContext, constantBuffer, &constantBufferPerObject, angle, cameraPosition, cameraFocus);
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
@@ -33,6 +33,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->VSSetShader(vShader, nullptr, 0);
 	immediateContext->RSSetViewports(1, &viewport);
+	immediateContext->RSSetState(ras_state);
 	immediateContext->PSSetShader(pShader, nullptr, 0);
 	immediateContext->PSSetShaderResources(0, 1, &textureSRV);
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
@@ -69,11 +70,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* constantBuffer;
 	ID3D11Buffer* lightBuffer;
+	ID3D11RasterizerState* ras_state;
 	ConstantBufferPerObject constantBufferPerObject = {};
 	LightConstantBuffer lightConstantBuffer = {};
-	//ID3D11RasterizerState* RasterationState = nullptr;
+	DirectX::XMFLOAT4 cameraPosition = { 0.0f, 0.0f, -5.5f, 1.0f };
+	DirectX::XMFLOAT3 cameraFocus = { 0.0f, 0.0f, 0.0f };
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport/* RasterationState*/))
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
 	{
 		std::cerr << "Failed to setup d3d11!" << std::endl;
 		return -1;
@@ -91,7 +94,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	int first_channels = 3;
 	const char* picc = "goku1.jpg";
 	unsigned char* load_picc = stbi_load(picc, &first_width, &first_height, &first_channels, STBI_rgb_alpha);
-	
+
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = first_width;
 	textureDesc.Height = first_height;
@@ -127,10 +130,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	img->Release();
 	img = nullptr;
 
+	D3D11_RASTERIZER_DESC ras_desc;
+	ZeroMemory(&ras_desc, sizeof(D3D11_RASTERIZER_DESC));
+	ras_desc.FillMode = D3D11_FILL_WIREFRAME;
+	ras_desc.CullMode = D3D11_CULL_NONE;
+	hr = device->CreateRasterizerState(&ras_desc, &ras_state);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.MipLODBias = 1;
 	samplerDesc.MaxAnisotropy = 1;
 	samplerDesc.MinLOD = 0;
@@ -162,7 +176,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	MSG msg = {};
 
-	while(msg.message != WM_QUIT)
+	while (msg.message != WM_QUIT)
 	{
 		time = std::chrono::duration<float>(endtime - starttime).count();
 		starttime = clock.now();
@@ -171,13 +185,41 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		currentangle += time * speed;
-		if (currentangle > 2 * M_PI) // RENDERAR ENDAST ENA SIDAN EFTER ETT HELT VARV REDAN ÄR GJORT
+		//currentangle += time * speed;
+		if (currentangle > 2 * M_PI)
 		{
-			currentangle = 0;
+			currentangle -= 2 * M_PI;
 		}
-		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer, constantBufferPerObject, currentangle, textureSRV, samplerState/*RasterationState*/);
-		
+		if (msg.message == WM_KEYDOWN)
+		{
+			if (GetKeyState(VK_LEFT) & 0x8000)
+			{
+				cameraPosition.x -= 0.1f;
+				cameraFocus.x -= 0.1f;
+			}
+			if (GetKeyState(VK_RIGHT) & 0x8000)
+			{
+				cameraPosition.x += 0.1f;
+				cameraFocus.x += 0.1f;
+			}
+			if (GetKeyState(VK_UP) & 0x8000)
+			{
+				cameraPosition.z += 0.1f;
+				cameraFocus.z += 0.1f;
+			}
+			if (GetKeyState(VK_DOWN) & 0x8000)
+			{
+				cameraPosition.z -= 0.1f;
+				cameraFocus.z -= 0.1f;
+			}
+			if (GetKeyState(VK_ESCAPE) & 0x8000)
+			{
+				msg.message = WM_QUIT;
+			}
+		}
+		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer,
+			constantBufferPerObject, currentangle, textureSRV, samplerState, cameraPosition, cameraFocus, ras_state);
+		//GetCursorPos(&cursorPosition);
 		swapChain->Present(1, 0);
 		endtime = clock.now();
 	}
@@ -195,36 +237,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	swapChain->Release();
 	immediateContext->Release();
 	device->Release();
+	samplerState->Release();
+	//ras_state->Release();
 
 	return 0;
 }
-
-/*
-	D3D11_SUBRESOURCE_DATA data = {load_picc, sizeof(uint32_t), 0 };
-
-	D3D11_TEXTURE2D_DESC picDesc = {};
-	picDesc.Width = first_width;
-	picDesc.Height = first_height;
-	picDesc.MipLevels = 1;
-	picDesc.ArraySize = 1;
-	picDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	picDesc.SampleDesc.Count = 1;
-	picDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	picDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-	ID3D11Texture2D* pictureTexture2D;
-
-	ID3D11ShaderResourceView* textureSRV = nullptr;
-
-	HRESULT hr = device->CreateTexture2D(&picDesc, &data, &pictureTexture2D);
-
-	if (!FAILED(hr)) {
-		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-		SRVDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		SRVDesc.Texture2D.MipLevels = 1;
-
-		hr = device->CreateShaderResourceView(pictureTexture2D, &SRVDesc, &textureSRV);
-	}
-
-	*/

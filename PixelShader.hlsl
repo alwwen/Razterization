@@ -1,4 +1,3 @@
-
 Texture2D m_texture;
 SamplerState m_samplerState;
 struct PixelShaderInput
@@ -9,8 +8,6 @@ struct PixelShaderInput
 	float2 uv : UV;
 	float3 worldPosition : POSITION;
 };
-
-
 
 
 cbuffer LightConstantBuffer : register(b1)
@@ -50,8 +47,5 @@ float4 main(PixelShaderInput input) : SV_TARGET //Render Target
 
 
 	return finalLight;
-
-
-
 
 };
