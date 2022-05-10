@@ -1,18 +1,15 @@
-struct VertexShaderInput
+struct vertex_input
 {
-	float3 position : POSITION;
-	//float3 colour : COLOUR;
-	float3 normal : NORMAL;
-	float2 uv : UV;
+	float3 m_position: POSITION;
+	float3 m_normal: NORMAL;
+	float2 m_texels : TEXCOORD;
 };
 
-struct VertexShaderOutput
+struct vertex_output
 {
-	float4 position : SV_POSITION;
-	//float3 colour : COLOUR;
-	float3 normal : NORMAL;
-	float2 uv : UV;
-	float3 worldPosition : POSITION;
+	float4 m_position : SV_POSITION;
+	float3 m_normal: NORMAL;
+	float2 m_texels : TEXCOORD;
 };
 
 cbuffer ConstantBuffer : register(b0)
@@ -21,13 +18,12 @@ cbuffer ConstantBuffer : register(b0)
 	float4x4 world;
 }
 
-VertexShaderOutput main(VertexShaderInput input)
+
+vertex_output main(vertex_input input)
 {
-	VertexShaderOutput output;
-	output.position = mul(float4(input.position, 1.0f), WVP);
-	//output.colour = input.colour;
-	output.normal = mul(float4(input.normal, 0.0f), world);
-	output.uv = input.uv;
-	output.worldPosition = mul(float4(input.position, 1.0f), world);
+	vertex_output output;
+	output.m_position = float4(input.m_position, 1.0f);
+	output.m_normal = input.m_normal;
+	output.m_texels = input.m_texels;
 	return output;
 }

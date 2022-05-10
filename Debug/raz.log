@@ -1,3 +1,6 @@
-﻿  Main.cpp
-C:\Users\Alexander Winblad\source\repos\raz\Main.cpp(191,28): warning C4305: '-=': truncation from 'double' to 'float'
-  raz.vcxproj -> C:\Users\Alexander Winblad\source\repos\raz\Debug\raz.exe
+﻿C:\Users\alwi1\OneDrive\Skrivbord\Razterization\GeometryShader.hlsl(27,9-39): warning X3206: implicit truncation of vector type
+C:\Users\alwi1\OneDrive\Skrivbord\Razterization\GeometryShader.hlsl(28,9-39): warning X3206: implicit truncation of vector type
+C:\Users\alwi1\OneDrive\Skrivbord\Razterization\GeometryShader.hlsl(29,9-39): warning X3206: implicit truncation of vector type
+  
+  compilation object save succeeded; see C:\Users\alwi1\OneDrive\Skrivbord\Razterization\Debug\GeometryShader.cso
+  raz.vcxproj -> C:\Users\alwi1\OneDrive\Skrivbord\Razterization\Debug\raz.exe

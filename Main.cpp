@@ -20,7 +20,8 @@
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer, ID3D11Buffer* constantBuffer,
 	ConstantBufferPerObject constantBufferPerObject, float angle, ID3D11ShaderResourceView* textureSRV, ID3D11SamplerState*& samplerState,
-	DirectX::XMFLOAT4 cameraPosition, DirectX::XMFLOAT3 cameraFocus, ID3D11RasterizerState*& ras_state)
+	DirectX::XMFLOAT4 cameraPosition, DirectX::XMFLOAT3 cameraFocus, ID3D11RasterizerState*& ras_state,
+	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader)
 {
 	float clearColour[4] = { 0, 0, 0, 0 };
 	immediateContext->ClearRenderTargetView(rtv, clearColour);
@@ -30,8 +31,10 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	UINT offset = 0;
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	immediateContext->IASetInputLayout(inputLayout);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 	immediateContext->VSSetShader(vShader, nullptr, 0);
+	immediateContext->HSSetShader(hShader, nullptr, 0);
+	immediateContext->DSSetShader(dShader, nullptr, 0);
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->RSSetState(ras_state);
 	immediateContext->PSSetShader(pShader, nullptr, 0);
@@ -65,6 +68,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11DepthStencilView* dsView;
 	D3D11_VIEWPORT viewport;
 	ID3D11VertexShader* vShader;
+	ID3D11HullShader* hShader;
+	ID3D11DomainShader* dShader;
 	ID3D11PixelShader* pShader;
 	ID3D11InputLayout* inputLayout;
 	ID3D11Buffer* vertexBuffer;
@@ -82,7 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vertexBuffer, vShader, pShader, inputLayout, constantBuffer, lightBuffer))
+	if (!SetupPipeline(device, vertexBuffer, vShader, pShader, inputLayout, constantBuffer, lightBuffer, hShader, dShader))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
 		return -1;
@@ -141,6 +146,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	D3D11_SAMPLER_DESC samplerDesc;
+	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -218,7 +224,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 			}
 		}
 		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, vertexBuffer, constantBuffer,
-			constantBufferPerObject, currentangle, textureSRV, samplerState, cameraPosition, cameraFocus, ras_state);
+			constantBufferPerObject, currentangle, textureSRV, samplerState, cameraPosition, cameraFocus, ras_state, hShader, dShader);
 		//GetCursorPos(&cursorPosition);
 		swapChain->Present(1, 0);
 		endtime = clock.now();
@@ -231,6 +237,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	inputLayout->Release();
 	pShader->Release();
 	vShader->Release();
+	hShader->Release();
+	dShader->Release();
 	dsView->Release();
 	dsTexture->Release();
 	rtv->Release();
@@ -238,7 +246,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	immediateContext->Release();
 	device->Release();
 	samplerState->Release();
-	//ras_state->Release();
+	ras_state->Release();
 
 	return 0;
 }

@@ -9,9 +9,9 @@ struct SimpleVertex
 	float pos[3];
 	//float clr[3];
 	float nor[3];
-	float uv[2];
+	float tex[2];
 	
-	SimpleVertex(const std::array<float, 3>& position, const std::array<float, 3> normal, const std::array<float, 2> UV)
+	SimpleVertex(const std::array<float, 3>& position, const std::array<float, 3> normal, const std::array<float, 2> TEX)
 	{
 		for (int i = 0; i < 3; ++i)
 		{
@@ -21,7 +21,7 @@ struct SimpleVertex
 		}
 		for (int i = 0; i < 2; ++i)
 		{
-			uv[i] = UV[i];
+			tex[i] = TEX[i];
 		}
 	}
 };
@@ -42,8 +42,11 @@ struct LightConstantBuffer
 	DirectX::XMFLOAT4 diffuse;
 };
 
-bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, ID3D11Buffer*& lightBuffer);
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode);
+bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, 
+	ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, 
+	ID3D11Buffer*& lightBuffer, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader);
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, 
+	std::string& vShaderByteCode, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader);
 bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, const std::string& vShaderByteCode);
 bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer);

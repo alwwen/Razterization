@@ -6,7 +6,8 @@
 
 
 
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode)
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, 
+	std::string& vShaderByteCode, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader)
 {
 	std::string shaderData;
 	std::ifstream reader;
@@ -50,6 +51,47 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 		return false;
 	}
 
+	shaderData.clear();
+	reader.close();
+	reader.open("Debug/HullShader.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		std::cerr << "Could not open HShader file!" << std::endl;
+		return false;
+	}
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
+
+	if (FAILED(device->CreateHullShader(shaderData.c_str(), shaderData.length(), nullptr, &hShader)))
+	{
+		std::cerr << "Failed to create hull shader!" << std::endl;
+		return false;
+	}
+
+	shaderData.clear();
+	reader.close();
+	reader.open("Debug/DomainShader.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		std::cerr << "Could not open PShader file!" << std::endl;
+		return false;
+	}
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
+
+	if (FAILED(device->CreateDomainShader(shaderData.c_str(), shaderData.length(), nullptr, &dShader)))
+	{
+		std::cerr << "Failed to create domain shader!" << std::endl;
+		return false;
+	}
+
+
 	return true;
 }
 
@@ -60,7 +102,8 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, co
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}, //Index 3 är från vilken vertex buffer den ska komma ifrån men eftersom vi bara har en så kommer det från index 0
 		//{"COLOUR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}, //12 = 4*3 offset per vertex
-		{"UV", 0,  DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		//{"UV", 0,  DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
 	HRESULT hr = device->CreateInputLayout(inputDesc, 3, vShaderByteCode.c_str(), vShaderByteCode.length(), &inputLayout);
@@ -82,6 +125,7 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 	};
 
 	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 	bufferDesc.ByteWidth = sizeof(triangle); //Storleken på datan 24*3 =72
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; //Den kan inte ändras på efter den skapas
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; //Ska vara en vertex buffer
@@ -90,6 +134,7 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 	bufferDesc.StructureByteStride = 0; //spelar bara roll vid en speciell typ av buffer
 
 	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = triangle;
 	data.SysMemPitch = 0; //Bara relevanta för texturer, inte för buffrar
 	data.SysMemSlicePitch = 0; //Hur mycket på en slice ska de vara i 3d rummet om man delar upp de i 2d slices
@@ -102,6 +147,7 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
 bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
 {
 	D3D11_BUFFER_DESC cBufferDesc;
+	ZeroMemory(&cBufferDesc, sizeof(cBufferDesc));
 	cBufferDesc.ByteWidth = sizeof(ConstantBufferPerObject);
 	cBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	cBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -110,6 +156,7 @@ bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
 	cBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = constantBuffer;
 	data.SysMemPitch = 0;
 	data.SysMemSlicePitch = 0;
@@ -122,6 +169,7 @@ bool CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& constantBuffer)
 bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer)
 {
 	D3D11_BUFFER_DESC lBufferDesc;
+	ZeroMemory(&lBufferDesc, sizeof(lBufferDesc));
 	lBufferDesc.ByteWidth = sizeof(LightConstantBuffer);
 	lBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	lBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -130,6 +178,7 @@ bool CreateLightConstantBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer)
 	lBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = lightBuffer;
 	data.SysMemPitch = 0;
 	data.SysMemSlicePitch = 0;
@@ -176,6 +225,8 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 	constantBufferPerObject->world = objectsavedMatrix;
 
 	immediatecontext->VSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
+	immediatecontext->HSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
+	immediatecontext->DSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
 	immediatecontext->PSSetConstantBuffers(0, 1, &constantPerObjectBuffer);
 	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 	immediatecontext->Map(constantPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -184,10 +235,12 @@ void UpdateBuffer(ID3D11DeviceContext* immediatecontext, ID3D11Buffer*& constant
 
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, ID3D11Buffer*& lightBuffer)
+bool SetupPipeline(ID3D11Device* device, ID3D11Buffer*& vertexBuffer, ID3D11VertexShader*& vShader, 
+	ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11Buffer*& constantBuffer, 
+	ID3D11Buffer*& lightBuffer, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader)
 {
 	std::string vShaderByteCode;
-	if (!LoadShaders(device, vShader, pShader, vShaderByteCode))
+	if (!LoadShaders(device, vShader, pShader, vShaderByteCode, hShader, dShader))
 	{
 		std::cerr << "Error loading shader!" << std::endl;
 		return false;
